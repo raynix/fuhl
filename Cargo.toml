@@ -6,4 +6,15 @@ edition = "2024"
 [dependencies]
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 shellexpand = "3.0"
-skim = "0.20.5"
+
+# Fuzzy matcher used for interactive TUI
+nucleo-matcher = "0.3.1"
+
+# Terminal handling and input
+crossterm = "0.26"
+
+# Terminal UI library (you can switch to ratatui or another if you prefer)
+tui = "0.19"
+
+# Open URLs in the default browser
+webbrowser = "0.6.0"
