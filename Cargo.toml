@@ -7,3 +7,4 @@ edition = "2024"
 rusqlite = { version = "0.37.0", features = ["bundled"] }
 shellexpand = "3.0"
 skim = "0.20.5"
+webbrowser = "0.6.0"

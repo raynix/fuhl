@@ -29,7 +29,7 @@ fn main() {
     }
 
     let conn = rusqlite::Connection::open("/tmp/fuhl").expect("Failed to open database");
-    let mut stmt = conn.prepare("SELECT id, url, title, visit_count, typed_count, last_visit_time, hidden FROM urls ORDER BY id DESC LIMIT 10").expect("Failed to prepare statement");
+    let mut stmt = conn.prepare("SELECT id, url, title, visit_count, typed_count, last_visit_time, hidden FROM urls WHERE length(url) < 60 ORDER BY last_visit_time DESC, visit_count DESC").expect("Failed to prepare statement");
 
     let url_iter = stmt
         .query_map([], |row| {
@@ -64,12 +64,12 @@ fn main() {
     for (i, u) in urls.iter().enumerate() {
         let safe_url = u.url.replace('\n', " ");
         let safe_title = u.title.replace('\n', " ");
-        input.push_str(&format!("{}||{}||{}||{}\n", i, u.id, safe_url, safe_title));
+        input.push_str(&format!("{}\t{} ... {}\n", i, safe_title, safe_url));
     }
 
     // Configure skim options: single-select, reasonable height
     let options = SkimOptionsBuilder::default()
-        .height(Some("50%"))
+        .height("50%".to_string())
         .multi(false)
         .build()
         .unwrap();
@@ -86,12 +86,15 @@ fn main() {
         return;
     }
 
-    // Parse the selected line to get the index and print the corresponding URL
+    // Parse the selected line to get the index and open the corresponding URL in the default browser
     let selected_output = selected_items[0].output();
-    let parts: Vec<&str> = selected_output.split("||").collect();
+    let parts: Vec<&str> = selected_output.split("\t").collect();
     let idx: usize = parts.get(0).and_then(|s| s.parse().ok()).unwrap_or(0);
     if let Some(u) = urls.get(idx) {
-        // Print only the URL (could be adapted to open it, copy to clipboard, etc.)
-        println!("{}", u.url);
+        // Open the URL in the default browser
+        match webbrowser::open(&u.url) {
+            Ok(_) => {}
+            Err(e) => eprintln!("Failed to open URL {}: {}", u.url, e),
+        }
     }
 }
